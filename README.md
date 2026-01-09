@@ -1,8 +1,9 @@
 # Reservasi Bowling
 
-Project ini berisi dua service sederhana:
-- `backend-service`: API + data in-memory.
+Project ini berisi tiga service sederhana:
+- `backend-service`: API berbasis Flask + MongoDB.
 - `frontend-service`: UI Flask yang memanggil backend.
+- `mongodb`: database untuk users + reservations.
 
 ## Cara menjalankan
 1. Jalankan docker compose:
