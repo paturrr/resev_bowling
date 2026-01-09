@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Admin - Reservasi Bowling</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --panel-soft: #f1f5f9;
+      --text: #111827;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-strong: #1d4ed8;
+      --accent: #f97316;
+      --border: #e2e8f0;
+      --shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(37,99,235,0.08), transparent 25%), radial-gradient(circle at 80% 0%, rgba(249,115,22,0.08), transparent 20%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(90deg, #ffffff, #eef2ff);
+      color: var(--text);
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .shell { max-width: 1400px; margin: 0 auto; padding: 26px 16px 40px; }
+    h1 { margin: 0; font-size: 26px; letter-spacing: 0.3px; }
+    h2 { color: #0f172a; margin-top: 0; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .pill { display: inline-block; background: rgba(37, 99, 235, 0.12); color: #1e3a8a; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(37, 99, 235, 0.2); font-weight: 700; letter-spacing: 0.2px; }
+    .card { background: linear-gradient(180deg, var(--panel), var(--panel-soft)); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: var(--shadow); }
+    .card-wide { padding: 0; }
+    .card-wide .card-header { padding: 18px; border-bottom: 1px solid var(--border); }
+    .card-wide .card-body { padding: 18px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #374151; }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      background: #ffffff;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); }
+    button, .btn {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #fff;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      display: inline-block;
+    }
+    button:hover, .btn:hover { transform: translateY(-1px); box-shadow: 0 12px 30px rgba(37, 99, 235, 0.2); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); box-shadow: none; }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; align-items: start; }
+    .alert { padding: 12px 14px; border-radius: 10px; margin: 12px 0; border: 1px solid var(--border); }
+    .alert.error { background: rgba(239, 68, 68, 0.08); color: #991b1b; border-color: rgba(239, 68, 68, 0.25); }
+    .alert.success { background: rgba(34, 197, 94, 0.1); color: #166534; border-color: rgba(34, 197, 94, 0.25); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 920px; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: #1f2937; font-weight: 700; background: #f8fafc; position: sticky; top: 0; }
+    tr:hover td { background: #f1f5f9; }
+    .lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px; margin-bottom: 10px; }
+    .lane-btn {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      padding: 12px 0;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+    .lane-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12); border-color: rgba(37, 99, 235, 0.4); }
+    .lane-btn.active { background: linear-gradient(135deg, var(--primary), var(--primary-strong)); border-color: transparent; box-shadow: 0 12px 30px rgba(59, 130, 246, 0.35); }
+    .lane-btn.reserved { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; border-color: rgba(239, 68, 68, 0.6); cursor: not-allowed; }
+  </style>
+</head>
+<body
+  data-reservations='{{ (reservations or [])|tojson|safe }}'
+  data-rate-per-hour="{{ meta_rate_per_hour|default(50000) }}"
+  data-extra-per-person="{{ meta_extra_per_person|default(25000) }}"
+  data-included-players="{{ meta_included_players|default(2) }}"
+  data-authenticated="{{ 'true' if is_authenticated else 'false' }}"
+>
+  <header>
+    <div class="shell" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+      <div>
+        <div class="pill">Dashboard Admin</div>
+        <h1>Reservasi Bowling</h1>
+        {% if user %}
+          <div class="meta">Masuk sebagai: {{ user.name }} ({{ user.email }})</div>
+        {% else %}
+          <div class="meta">Masuk sebagai: Tamu</div>
+        {% endif %}
+      </div>
+      {% if user %}
+        <a class="btn btn-ghost" href="{{ url_for('logout') }}">Keluar</a>
+      {% else %}
+        <div style="display:flex; gap:8px; flex-wrap: wrap;">
+          <a class="btn btn-ghost" href="{{ url_for('login') }}">Masuk</a>
+          <a class="btn" href="{{ url_for('register') }}">Daftar</a>
+        </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="shell">
+    {% if message %}
+      <div class="alert success">{{ message }}</div>
+    {% elif error %}
+      <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <div class="grid">
+      <section class="card">
+        <div class="meta">Tambah Reservasi</div>
+        <h2>Input booking baru</h2>
+        {% if not is_authenticated %}
+          <div class="alert error">Silakan login untuk menambah reservasi.</div>
+        {% endif %}
+        <form method="POST">
+          <input type="hidden" name="form_type" value="create_reservation">
+          <input type="hidden" id="lane" name="lane" required {{ 'disabled' if not is_authenticated }}>
+          <label for="name">Nama pemesan</label>
+          {% if user and user.role == 'customer' %}
+            <input type="text" id="name" name="name" value="{{ user.name }}" readonly style="background: #f3f4f6; color: #6b7280;">
+            <div class="meta" style="margin-top:-6px; margin-bottom:8px;">Nama otomatis dari akun dan tidak dapat diubah.</div>
+          {% else %}
+            <input type="text" id="name" name="name" placeholder="Nama lengkap" required {{ 'disabled' if not is_authenticated }}>
+          {% endif %}
+
+          <label for="phone">No. kontak</label>
+          <input type="text" id="phone" name="phone" placeholder="0812xxxx" required {{ 'disabled' if not is_authenticated }}>
+
+          <label for="date">Tanggal</label>
+          <input type="date" id="date" name="date" required {{ 'disabled' if not is_authenticated }}>
+
+          <label for="time">Jam mulai</label>
+          <select id="time" name="time" required {{ 'disabled' if not is_authenticated }}>
+            <option value="" disabled selected>Pilih jam</option>
+            {% for slot in slots %}
+              <option value="{{ slot }}">{{ slot }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="duration">Durasi</label>
+          <select id="duration" name="duration_hours" required {{ 'disabled' if not is_authenticated }}>
+            <option value="1" selected>1 jam</option>
+            <option value="2">2 jam</option>
+            <option value="3">3 jam</option>
+          </select>
+
+          <label>Lane</label>
+          <div class="lanes">
+            {% for lane in lanes %}
+              <button type="button" class="lane-btn" data-lane="{{ lane }}" {{ 'disabled' if not is_authenticated }}>{{ loop.index }}</button>
+            {% endfor %}
+          </div>
+          <div class="meta" id="lane-hint">Pilih jam untuk melihat ketersediaan lane.</div>
+
+          <label for="players">Jumlah pemain</label>
+          <input type="number" id="players" name="players" min="1" max="8" value="2" required {{ 'disabled' if not is_authenticated }}>
+
+          <div class="meta" id="cost-info" style="margin-top: 4px; margin-bottom: 8px;">Total: -</div>
+
+          <label for="notes">Catatan (opsional)</label>
+          <textarea id="notes" name="notes" rows="2" placeholder="Permintaan khusus, contoh: ingin lane bersebelahan" {{ 'disabled' if not is_authenticated }}></textarea>
+
+          <button type="submit" style="width: 100%;" {{ 'disabled' if not is_authenticated }}>Simpan reservasi</button>
+        </form>
+      </section>
+
+      <section class="card card-wide">
+        <div class="card-header" style="display:flex; align-items:center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+          <div>
+            <div class="meta">{{ "Daftar Reservasi" if is_admin or not is_authenticated else "History Pemesanan" }}</div>
+            <h2>{{ "Jadwal terdaftar" if is_admin or not is_authenticated else "History pemesanan" }}</h2>
+          </div>
+          <form method="GET" style="display:flex; gap:8px; align-items:center; flex-wrap: nowrap; flex: 1; justify-content: flex-end;">
+            <input type="date" name="date" value="{{ date_filter or '' }}" style="width: 150px; height: 40px; padding: 8px 10px;">
+            <button type="submit" class="btn btn-ghost" style="white-space: nowrap; height: 40px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center;">Filter</button>
+          </form>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  {% if is_admin %}
+                    <th>Nama</th>
+                    <th>Kontak</th>
+                  {% endif %}
+                  <th>Tanggal</th>
+                  <th>Jam</th>
+                  <th>Lane</th>
+                  <th>Pemain</th>
+                  {% if is_admin %}
+                    <th>Catatan</th>
+                  {% endif %}
+                  <th>Biaya</th>
+                  {% if is_admin %}
+                    <th>Aksi</th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody>
+                {% if reservations_view|length == 0 %}
+                  <tr><td colspan="{{ 10 if is_admin else 6 }}" class="meta">Belum ada reservasi.</td></tr>
+                {% else %}
+                  {% for r in reservations_view %}
+                    <tr>
+                      <td>{{ loop.index }}</td>
+                      {% if is_admin %}
+                        <td style="font-weight:700;">{{ r.name }}</td>
+                        <td>{{ r.phone }}</td>
+                      {% endif %}
+                      <td>{{ r.date }}</td>
+                      <td>{{ r.start_time }} - {{ r.end_time }} ({{ r.duration_hours }} jam)</td>
+                      <td>{{ r.lane }}</td>
+                      <td>{{ r.players }}</td>
+                      {% if is_admin %}
+                        <td>{{ r.notes }}</td>
+                      {% endif %}
+                      <td>Rp {{ "{:,.0f}".format(r.total_cost) }}</td>
+                      {% if is_admin %}
+                        <td>
+                          <form method="POST" style="margin:0;">
+                            <input type="hidden" name="form_type" value="delete_reservation">
+                            <input type="hidden" name="res_id" value="{{ r.id }}">
+                            <button type="submit" class="btn btn-danger" {{ 'disabled' if not is_authenticated }}>Batalkan</button>
+                          </form>
+                        </td>
+                      {% endif %}
+                    </tr>
+                  {% endfor %}
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const reservationsData = JSON.parse(document.body.dataset.reservations || "[]");
+    const isAuthenticated = document.body.dataset.authenticated === "true";
+    const laneButtons = document.querySelectorAll(".lane-btn");
+    const laneInput = document.getElementById("lane");
+    const laneHint = document.getElementById("lane-hint");
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
+    const durationInput = document.getElementById("duration");
+    const costInfo = document.getElementById("cost-info");
+
+    (function setDefaultDates() {
+      const today = new Date().toISOString().slice(0, 10);
+      if (dateInput && !dateInput.value) {
+        dateInput.value = today;
+      }
+      const filterInput = document.querySelector('input[name="date"]');
+      if (filterInput && !filterInput.value) {
+        filterInput.value = today;
+      }
+      if (timeInput && !timeInput.value && timeInput.options && timeInput.options.length > 1) {
+        // skip placeholder
+        timeInput.selectedIndex = 1;
+      }
+    })();
+
+    function computeReserved(date, time, duration) {
+      if (!date || !time || !duration) return new Set();
+      const blocked = new Set();
+      reservationsData.forEach(r => {
+        if (r.date !== date) return;
+        const start = r.start_time || r.time;
+        const dur = r.duration_hours || 1;
+        if (start && intervalsOverlap(time, duration, start, dur)) {
+          blocked.add(r.lane);
+        }
+      });
+      return blocked;
+    }
+
+    function intervalsOverlap(start1, dur1, start2, dur2) {
+      const toMin = (t) => {
+        const [h, m] = t.split(":");
+        return parseInt(h, 10) * 60 + parseInt(m || "0", 10);
+      };
+      const s1 = toMin(start1);
+      const e1 = s1 + dur1 * 60;
+      const s2 = toMin(start2);
+      const e2 = s2 + dur2 * 60;
+      return !(e1 <= s2 || e2 <= s1);
+    }
+
+    function renderLaneState() {
+      if (!laneButtons.length || !laneInput) return;
+      if (!isAuthenticated) {
+        const date = dateInput ? dateInput.value : "";
+        const time = timeInput ? timeInput.value : "";
+        const duration = parseInt(durationInput.value || "1", 10);
+        const reserved = computeReserved(date, time, duration);
+        laneButtons.forEach(btn => {
+          const lane = btn.dataset.lane;
+          btn.classList.remove("active", "reserved");
+          btn.disabled = true;
+          if (reserved.has(lane)) {
+            btn.classList.add("reserved");
+          }
+        });
+        if (laneHint) {
+          laneHint.textContent = time
+            ? (reserved.size ? "Lane merah sudah terisi pada jam tersebut." : "Semua lane tersedia pada jam tersebut.")
+            : "Masuk untuk memilih lane.";
+        }
+        return;
+      }
+      const date = dateInput.value;
+      const time = timeInput.value;
+      const duration = parseInt(durationInput.value || "1", 10);
+      const reserved = computeReserved(date, time, duration);
+      let chosen = laneInput.value;
+      laneButtons.forEach(btn => {
+        const lane = btn.dataset.lane;
+        btn.classList.remove("active", "reserved");
+        btn.disabled = false;
+        if (reserved.has(lane)) {
+          btn.classList.add("reserved");
+          btn.disabled = true;
+        }
+        if (laneInput.value === lane) {
+          btn.classList.add("active");
+        }
+      });
+      if (!chosen) {
+        const firstFree = Array.from(laneButtons).find(b => !b.disabled);
+        if (firstFree) {
+          laneInput.value = firstFree.dataset.lane;
+          firstFree.classList.add("active");
+        }
+      }
+      if (!time) {
+        laneHint.textContent = "Pilih jam untuk melihat ketersediaan lane.";
+      } else {
+        laneHint.textContent = reserved.size
+          ? "Lane merah sudah terisi pada jam tersebut."
+          : "Semua lane tersedia pada jam tersebut.";
+      }
+    }
+
+    function renderCost() {
+      if (!costInfo) return;
+      const duration = parseInt(durationInput.value || "1", 10);
+      const players = parseInt(document.getElementById("players").value || "1", 10);
+      const ratePerHour = Number(document.body.dataset.ratePerHour || "50000");
+      const extraPerPerson = Number(document.body.dataset.extraPerPerson || "25000");
+      const includedPlayers = Number(document.body.dataset.includedPlayers || "2");
+      const extraPlayers = Math.max(players - includedPlayers, 0);
+      const total = ratePerHour * duration + extraPerPerson * extraPlayers;
+      const formatter = new Intl.NumberFormat("id-ID");
+      costInfo.textContent = `Total: Rp ${formatter.format(total)} (${duration} jam)`;
+    }
+
+    laneButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.disabled) return;
+        laneInput.value = btn.dataset.lane;
+        laneButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    dateInput.addEventListener("change", renderLaneState);
+    timeInput.addEventListener("change", renderLaneState);
+    durationInput.addEventListener("change", () => {
+      renderLaneState();
+      renderCost();
+    });
+    document.getElementById("players").addEventListener("input", renderCost);
+    renderCost();
+    renderLaneState();
+  </script>
+</body>
+</html>

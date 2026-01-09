@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daftar Pelanggan - Reservasi Bowling</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --panel-soft: #f1f5f9;
+      --text: #111827;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-strong: #1d4ed8;
+      --border: #e2e8f0;
+      --shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+      --accent: #f97316;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(37,99,235,0.08), transparent 25%), radial-gradient(circle at 80% 0%, rgba(249,115,22,0.08), transparent 20%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 22px 14px;
+    }
+    .shell {
+      width: min(1100px, 100%);
+      background: linear-gradient(120deg, rgba(255,255,255,0.95), rgba(241,245,249,0.95));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); position: relative; z-index: 1; }
+    .hero { padding: 32px 30px; border-right: 1px solid var(--border); }
+    .pill { display: inline-block; background: rgba(37, 99, 235, 0.12); color: #1e3a8a; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(37, 99, 235, 0.2); font-weight: 700; letter-spacing: 0.2px; }
+    h1 { margin: 10px 0 6px 0; font-size: 30px; letter-spacing: 0.2px; }
+    p { color: var(--muted); line-height: 1.6; margin: 0 0 16px 0; }
+    ul { list-style: none; padding: 0; margin: 14px 0 0 0; color: var(--muted); }
+    li { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 6px rgba(249,115,22,0.07); }
+    .form { padding: 32px 30px; background: linear-gradient(180deg, var(--panel), var(--panel-soft)); }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #374151; }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      background: #ffffff;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); }
+    button {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #fff;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      box-shadow: var(--shadow);
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 12px 30px rgba(37, 99, 235, 0.2); }
+    .muted { color: var(--muted); font-size: 13px; }
+    .alert { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; }
+    .alert.error { background: rgba(239, 68, 68, 0.08); color: #991b1b; border-color: rgba(239, 68, 68, 0.25); }
+    @media (max-width: 720px) {
+      .hero { border-right: none; border-bottom: 1px solid var(--border); }
+      .shell { border-radius: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="grid">
+      <section class="hero">
+        <div class="pill">Pelanggan</div>
+        <h1>Daftar akun</h1>
+        <p>Buat akun untuk memesan lane bowling secara online. Nama yang didaftarkan akan terisi otomatis saat Anda membuat reservasi.</p>
+        <ul>
+          <li><span class="dot"></span><span>Pesan lane dengan durasi 1–3 jam</span></li>
+          <li><span class="dot"></span><span>Harga mulai Rp50.000 per jam</span></li>
+          <li><span class="dot"></span><span>Tambah biaya Rp25.000 per orang setelah 2 orang</span></li>
+        </ul>
+      </section>
+
+      <section class="form">
+        <div style="margin-bottom: 12px;">
+          <div class="muted">Buat akun baru</div>
+          <h2 style="margin: 4px 0 0 0;">Isi data Anda</h2>
+        </div>
+
+        {% if error %}
+          <div class="alert error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+          <label for="name">Nama lengkap</label>
+          <input type="text" id="name" name="name" placeholder="Nama lengkap" required>
+
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="email@contoh.com" required>
+
+          <label for="password">Kata sandi</label>
+          <input type="password" id="password" name="password" placeholder="******" required>
+
+          <button type="submit">Daftar</button>
+        </form>
+
+        <div class="muted" style="margin-top: 10px;">Sudah punya akun? <a href="{{ url_for('login') }}" style="color:#2563eb;">Masuk di sini</a>.</div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

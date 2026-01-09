@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reservasi Bowling</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111827;
+      --panel-soft: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #3b82f6;
+      --primary-strong: #2563eb;
+      --accent: #f97316;
+      --border: #1f2937;
+      --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(59,130,246,0.08), transparent 25%), radial-gradient(circle at 80% 0%, rgba(249,115,22,0.08), transparent 20%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(90deg, #0f172a, #111827);
+      color: #fff;
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .shell { max-width: 1150px; margin: 0 auto; padding: 24px 18px 40px; }
+    h1 { margin: 0; font-size: 32px; letter-spacing: 0.3px; }
+    h2 { margin: 0 0 10px 0; color: #f8fafc; }
+    p { color: var(--muted); line-height: 1.6; }
+    .pill { display: inline-block; background: rgba(59, 130, 246, 0.14); color: #cbd5e1; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(59, 130, 246, 0.25); font-weight: 700; letter-spacing: 0.2px; }
+    .btn { background: linear-gradient(135deg, var(--primary), var(--primary-strong)); color: #fff; border: none; padding: 12px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; letter-spacing: 0.3px; box-shadow: var(--shadow); text-decoration: none; display: inline-block; }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 12px 30px rgba(59, 130, 246, 0.35); }
+    .card { background: linear-gradient(180deg, var(--panel), var(--panel-soft)); border: 1px solid var(--border); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #cbd5e1; }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      background: #0f172a;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .alert { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; }
+    .alert.error { background: rgba(239, 68, 68, 0.1); color: #fecaca; border-color: rgba(239, 68, 68, 0.4); }
+    .alert.success { background: rgba(34, 197, 94, 0.1); color: #bbf7d0; border-color: rgba(34, 197, 94, 0.4); }
+    .reservation { border-bottom: 1px solid var(--border); padding: 10px 0; }
+    .reservation:last-child { border-bottom: none; }
+    .tag { display: inline-block; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(249, 115, 22, 0.4); color: #fdba74; background: rgba(249, 115, 22, 0.12); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell" style="padding: 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <div class="pill">Arena Bowling</div>
+        <h2 style="margin: 6px 0 0 0;">Reservasi Online</h2>
+        <div style="color: var(--muted);">Pilih lane, jam main, dan jumlah pemain dalam satu halaman.</div>
+      </div>
+      <a class="btn" href="#form">Buat Reservasi</a>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="grid">
+      <section class="card" id="form">
+        <div style="margin-bottom: 10px;">
+          <div class="meta">Form Reservasi</div>
+          <h2>Pilih jadwal bermain</h2>
+        </div>
+        <div id="alert" class="alert" style="display: none;"></div>
+
+        <label for="name">Nama pemesan</label>
+        <input type="text" id="name" placeholder="Nama lengkap" required>
+
+        <label for="phone">No. kontak</label>
+        <input type="text" id="phone" placeholder="0812xxxx" required>
+
+        <label for="date">Tanggal</label>
+        <input type="date" id="date" required>
+
+        <label for="time">Jam</label>
+        <select id="time" required>
+          <option value="" disabled selected>Pilih jam</option>
+          {% for slot in slots %}
+            <option value="{{ slot }}">{{ slot }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="lane">Lane</label>
+        <select id="lane" required>
+          <option value="" disabled selected>Pilih lane</option>
+          {% for lane in lanes %}
+            <option value="{{ lane }}">{{ lane }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="players">Jumlah pemain</label>
+        <input type="number" id="players" min="1" max="8" value="2" required>
+
+        <label for="notes">Catatan (opsional)</label>
+        <textarea id="notes" rows="2" placeholder="Permintaan khusus, contoh: butuh sepatu ukuran tertentu"></textarea>
+
+        <button class="btn" id="submit">Simpan reservasi</button>
+      </section>
+
+      <section class="card">
+        <div style="margin-bottom: 10px;">
+          <div class="meta">Jadwal Hari Ini</div>
+          <h2>Reservasi terdaftar</h2>
+        </div>
+        <div class="meta" style="margin-bottom: 8px;">Pilih tanggal untuk melihat ketersediaan.</div>
+        <input type="date" id="filter-date" />
+        <div id="list"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const alertBox = document.getElementById("alert");
+    const listBox = document.getElementById("list");
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById("date").value = today;
+    document.getElementById("filter-date").value = today;
+
+    function showAlert(type, message) {
+      alertBox.style.display = "block";
+      alertBox.className = `alert ${type}`;
+      alertBox.textContent = message;
+    }
+
+    function clearAlert() {
+      alertBox.style.display = "none";
+      alertBox.textContent = "";
+    }
+
+    async function fetchReservations(date) {
+      const query = date ? `?date=${date}` : "";
+      const res = await fetch(`/api/reservations${query}`);
+      if (!res.ok) return [];
+      return res.json();
+    }
+
+    function renderList(data) {
+      if (!data || data.length === 0) {
+        listBox.innerHTML = '<div class="meta">Belum ada reservasi.</div>';
+        return;
+      }
+      listBox.innerHTML = data.map(r => `
+        <div class="reservation">
+          <div style="display:flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <div>
+              <div style="font-weight:700;">${r.name} <span class="meta">(${r.phone})</span></div>
+              <div class="meta">${r.date} • ${r.time} • ${r.lane} • ${r.players} pemain</div>
+              ${r.notes ? `<div class="meta">Catatan: ${r.notes}</div>` : ""}
+            </div>
+            <button class="btn" style="padding:8px 12px; background: linear-gradient(135deg, #ef4444, #b91c1c);" onclick="cancel(${r.id})">Batalkan</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadList() {
+      const date = document.getElementById("filter-date").value;
+      const data = await fetchReservations(date);
+      renderList(data);
+    }
+
+    document.getElementById("filter-date").addEventListener("change", loadList);
+
+    document.getElementById("submit").addEventListener("click", async () => {
+      clearAlert();
+      const payload = {
+        name: document.getElementById("name").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        date: document.getElementById("date").value,
+        time: document.getElementById("time").value,
+        lane: document.getElementById("lane").value,
+        players: document.getElementById("players").value,
+        notes: document.getElementById("notes").value.trim(),
+      };
+
+      if (!payload.name || !payload.phone || !payload.date || !payload.time || !payload.lane || !payload.players) {
+        showAlert("error", "Semua kolom wajib diisi.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/reservations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showAlert("error", data.message || "Gagal menyimpan reservasi.");
+          return;
+        }
+        showAlert("success", "Reservasi tersimpan.");
+        loadList();
+      } catch (err) {
+        showAlert("error", "Gagal terhubung ke server.");
+      }
+    });
+
+    async function cancel(id) {
+      try {
+        const res = await fetch(`/api/reservations/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (!res.ok) {
+          showAlert("error", data.message || "Gagal membatalkan.");
+          return;
+        }
+        showAlert("success", "Reservasi dibatalkan.");
+        loadList();
+      } catch {
+        showAlert("error", "Gagal terhubung ke server.");
+      }
+    }
+
+    loadList();
+  </script>
+</body>
+</html>

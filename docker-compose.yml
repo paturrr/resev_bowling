@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: bowling-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend-service:
+    build: ./backend-service
+    container_name: bowling-backend
+    environment:
+      - JWT_SECRET=change-me
+      - JWT_EXPIRE_MINUTES=180
+      - MONGO_URL=mongodb://mongodb:27017/bowling
+    ports:
+      - "6000:5000"
+    depends_on:
+      - mongodb
+
+  frontend-service:
+    build: ./frontend-service
+    container_name: bowling-frontend
+    environment:
+      - BACKEND_URL=http://backend-service:5000
+      - SECRET_KEY=change-me
+    ports:
+      - "6001:5000"
+    depends_on:
+      - backend-service
+
+volumes:
+  mongo_data:
